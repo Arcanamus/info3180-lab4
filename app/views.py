@@ -52,6 +52,17 @@ def upload():
     return render_template('upload.html', form=uploadform)
 
 
+@app.route('/uploads/<filename>')
+def get_image(filename):
+    root_dir = os.getcwd()
+    return send_from_directory(os.path.join(os.getcwd(), app.config['UPLOAD_FOLDER']), filename)
+
+@app.route('/files')
+def files():
+    if not session.get('logged_in'):
+        abort(401)
+    return render_template('files.html', images=get_uploaded_images())
+
 @app.route('/login', methods=['POST', 'GET'])
 def login():
     error = None
@@ -76,6 +87,15 @@ def logout():
 ###
 # The functions below should be applicable to all Flask apps.
 ###
+
+def get_uploaded_images():
+    imageList = []
+    for subdir, dirs, files in os.walk(os.getcwd() + '/uploads'):
+        for file in files:
+            if file == '.gitkeep':
+                continue
+            imageList.append(os.path.join(file))
+        return imageList
 
 # Flash errors from the form if validation fails
 def flash_errors(form):
